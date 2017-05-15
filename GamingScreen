@@ -1,0 +1,186 @@
+
+/**
+ * GamingScreen
+ * 
+ * @author Owen Cruise
+ * @author Hayes Ensign
+ * @version 5/11/2017
+ */
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+public class GamingScreen implements Screen
+{
+    private final Hoopmania game;
+    public  Texture gymBackground;
+    public  Texture hoop;
+    public  Texture player;
+    public  Texture ballImg;
+    private Circle ball;
+    private Music mus;
+    private Sound netSwish;
+    private Sound crowdRoar;
+    private Array<String> shotMessages;
+    private BitmapFont counterFont;
+    public  boolean shotMade;
+    public  long leftHoopEdge;
+    public  long rightHoopEdge;
+    public  long hoopHeight;
+    public  OrthographicCamera cam;
+    public  long shotCtr;
+    public  long playerPosition;
+    public  final int VECTOR_MAX_LENGTH;
+    public  final int VECTOR_MIN_LENGTH;
+    private boolean isReleased;
+    public  float vectorDirection;
+    public  float vectorMagnitude;
+    public  int ballX;
+    public  int ballY;
+    private final double G;//acceleration due to gravity
+    public  final double BALL_MASS;
+    public  double v0x;
+    public  double vy;
+
+    /**
+     * Constructor
+     *
+     * @param hoopHeight the desired height of the hoop
+     */
+    public GamingScreen (final Hoopmania game, long hoopHeight)
+    {
+        this.game     = game;
+        gymBackground = new Texture(Gdx.files.internal("Background.png"));
+        hoop          = new Texture(Gdx.files.internal(/* fill this in */));
+        player        = new Texture(Gdx.files.internal(/* fill this in */));
+
+        crowdRoar = Gdx.audio.newSound(Gdx.files.internal("Roaring Crowd.wav"));
+        netSwish  = Gdx.audio.newSound(Gdx.files.internal("Swish.mp3"));
+
+        mus = Gdx.audio.newMusic(Gdx.files.internal("BBall Music"));
+        mus.setLooping(true);
+
+        // create the camera and the SpriteBatch
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, 1000, 1000);
+
+        playerPosition = MathUtils.random(10, 480);
+        this.hoopHeight = MathUtils.clamp(hoopHeight, 200, 800);
+
+        String[] messages = {"Nothing but net!", "Nice shot!", "Swish!",
+                "Buzzer Beater!", "Baller!", "Buckets!", "Awesome!",
+                "Sweet!", "Great!", "Keep it up!"}
+        shotMessages = new Array(messages);
+
+        ball = new Circle();
+        ball.x = playerPosition + 40;
+        ball.y = 350;
+
+        // create the raindrops array and spawn the first raindrop
+        raindrops = new Array<Rectangle>();
+        spawnRaindrop();
+    }
+
+    /**
+     * Utilizes the vector's direction and magnitude and
+     * translates them into a force, then the resulting
+     * acceleration, and finally the 'x' and 'y' components
+     * of the ball's initial speed
+     * 
+     * Postcondition: fields v0x and vy have been updated to
+     * correspond with the initial velocity with which it leaves
+     * the player's hands
+     */
+    private void translateArrow ()
+    {
+    }
+
+    /**
+     * Unprojects arrow vector and converts it into a magnitude
+     * and direction
+     * 
+     * Postcondition: fields vectorMagnitude and vectorDirection
+     * have been updated to correspond with the state of the arrow
+     */
+    private void unprojectArrow()
+    {
+    }
+
+    /**
+     * @return true if, and only if, the ball's position lies
+     * within the boundaries of the hoop
+     */
+    private boolean insideHoop()
+    {
+        return true;
+    }
+
+    /**
+     * @param delta amount of time between successive
+     *        calls of render
+     * Implements render (float) in Screen
+     */
+    @Override
+    public void render (float delta)
+    {
+    }
+
+    /**
+     * @param width the width of the new screen size
+     * @param height the height of the new screen size
+     * Implements resize (int, int) in Screen
+     */
+    @Override
+    public void resize (int width, int height)
+    {
+    }
+
+    /**
+     * Implements show () in Screen
+     */
+    @Override
+    public void show ()
+    {
+    }
+
+    /**
+     * Implements hide () in Screen
+     */
+    @Override
+    public void hide ()
+    {
+    }
+
+    /**
+     * Implements pause () in Screen
+     */
+    @Override
+    public void pause ()
+    {
+    }
+
+    /**
+     * Implements resume () in Screen
+     */
+    @Override
+    public void resume ()
+    {
+    }
+
+    /**
+     * Implements dispose () in Screen
+     */
+    @Override
+    public void dispose ()
+    {
+    }
+}
