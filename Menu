@@ -1,0 +1,85 @@
+
+/**
+ * Menu
+ * 
+ * @author Owen Cruise
+ * @author Hayes Ensign
+ * @version 5/11/2017
+ */
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+public class Menu implements Screen
+{
+    private final Hoopmania game;
+    public OrthographicCamera cam;
+
+    public Menu (final Hoopmania game)
+    {
+        this.game = game;
+
+        cam = new OrthographicCamera();
+        cam.setToOrtho(false, 1000, 1000);
+    }
+
+    /**
+     * @param delta amount of time between successive
+     *        calls of render
+     * Implements render (float) in Screen
+     */
+    @Override
+    public void render (float delta)
+    {
+    }
+
+    /**
+     * @param width the width of the new screen size
+     * @param height the height of the new screen size
+     * Implements resize (int, int) in Screen
+     */
+    @Override
+    public void resize (int width, int height)
+    {
+    }
+
+    /**
+     * Implements show () in Screen
+     */
+    @Override
+    public void show ()
+    {
+    }
+
+    /**
+     * Implements hide () in Screen
+     */
+    @Override
+    public void hide ()
+    {
+    }
+
+    /**
+     * Implements pause () in Screen
+     */
+    @Override
+    public void pause ()
+    {
+    }
+
+    /**
+     * Implements resume () in Screen
+     */
+    @Override
+    public void resume ()
+    {
+    }
+
+    /**
+     * Implements dispose () in Screen
+     */
+    @Override
+    public void dispose ()
+    {
+    }
+}
