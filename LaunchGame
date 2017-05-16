@@ -1,0 +1,19 @@
+/**
+ * LaunchGame
+ * 
+ * @author Owen Cruise
+ * @author Hayes Ensign
+ * @version 5/11/2017
+ */
+import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
+public class LaunchGame
+{
+    /**
+     * Launches the game
+     */
+    public static void main(String[] args)
+    {
+        Hoopmania myProgram = new Hoopmania();
+        LwjglApplication launcher = new LwjglApplication(myProgram);
+    }
+}
