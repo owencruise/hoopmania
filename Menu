@@ -1,11 +1,3 @@
-
-/**
- * Menu
- * 
- * @author Owen Cruise
- * @author Hayes Ensign
- * @version 5/11/2017
- */
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -14,15 +6,14 @@ public class Menu implements Screen
 {
     private final Hoopmania game;
     public OrthographicCamera cam;
-
+    private Texture playButton;
+    private Texture 
     public Menu (final Hoopmania game)
     {
         this.game = game;
-
         cam = new OrthographicCamera();
-        cam.setToOrtho(false, 1000, 1000);
+        cam.setToOrtho(false, 800, 480);
     }
-
     /**
      * @param delta amount of time between successive
      *        calls of render
@@ -31,8 +22,11 @@ public class Menu implements Screen
     @Override
     public void render (float delta)
     {
+        game.batch.begin();
+        game.font.draw(game.batch, "HOOPMANIA", 400, 980);
+        playButton = new Texture(Gdx.files.internal("play.png"));
+        instructionsButton = new Texture(Gdx.files.internal("//tobecompletedlater));
     }
-
     /**
      * @param width the width of the new screen size
      * @param height the height of the new screen size
@@ -41,8 +35,8 @@ public class Menu implements Screen
     @Override
     public void resize (int width, int height)
     {
+        cam.setToOrtho(false, width, height);
     }
-
     /**
      * Implements show () in Screen
      */
@@ -81,5 +75,7 @@ public class Menu implements Screen
     @Override
     public void dispose ()
     {
+        super(ball) = null;
     }
+
 }
