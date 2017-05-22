@@ -2,6 +2,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.graphics.Texture;
 public class Menu implements Screen
 {
     private Rectangle playRec;
@@ -11,7 +13,7 @@ public class Menu implements Screen
     public OrthographicCamera cam;
     private Texture playButton;
     private Texture instructionsButton;
-    private Textrure historyButton;
+    private Texture historyButton;
     private final Hoopmania instruc;
     private final Hoopmania hist;
     public Menu (final Hoopmania game)
@@ -37,7 +39,7 @@ public class Menu implements Screen
         instruc.batch.begin();
         game.batch.begin();
         hist.batch.begin();
-        hist.font.draw(hist.batch, "Basketball was invented in 1891 in Springfield, Massachusetts by James Naismith. \n Naismith was a Canadian physical education instructor and was attempting to invent a less dangerous alternative to football. \n The YMCA and the US Army had a major role in spreading basketball globally. \n The first professional league was founded in 1898. In the 20th century, the NBA became the leading professional league worldwide. \n Basketball has become a multibillion-dollar industry and an large part of American culture.", 20, 800);,  
+        hist.font.draw(hist.batch, "Basketball was invented in 1891 in Springfield, Massachusetts by James Naismith. \n Naismith was a Canadian physical education instructor and was attempting to invent a less dangerous alternative to football. \n The YMCA and the US Army had a major role in spreading basketball globally. \n The first professional league was founded in 1898. In the 20th century, the NBA became the leading professional league worldwide. \n Basketball has become a multibillion-dollar industry and an large part of American culture.", 20, 800);  
         game.font.draw(game.batch, "HOOPMANIA", 400, 980);
         instruc.font.draw(instruc.batch, "Welcome to the HooopMania digital basketball game. \n Line up the arrow with the initial velocity you want the ball to have. \n When ready, press the left button on the mouse to release the ball. \n Points are accumulated by making shots into the basket. \n 5 missed shots ends the game.", 20, 800);
         playButton = new Texture(Gdx.files.internal("play.png"));
@@ -48,17 +50,17 @@ public class Menu implements Screen
         histRec = new Rectangle(525, 300, historyButton.getWidth(), historyButton.getHeight());
         if (Gdx.input.isTouched())
         {
-            if (playRec.contains(Input.getX(), Input.getY())
+            if (playRec.contains(Input.getX(), Input.getY()))
             {
                 game.setScreen(new GameScreen(game));
                 dispose();
             }
-            else if (instRec.contains(Input.getX(), Input.getY())
+            else if (instRec.contains(Input.getX(), Input.getY()))
             {
                 game.setScreen(new GameScreen(instruc));
                 dispose();
             }
-            else if (histRec.contains(Input.getX(), Input.getY())
+            else if (histRec.contains(Input.getX(), Input.getY()))
             {
                 game.setScreen(new GameScreen(hist));
                 dispose();
@@ -124,4 +126,3 @@ public class Menu implements Screen
     }
 
 }
-
