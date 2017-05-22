@@ -4,16 +4,28 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 public class Menu implements Screen
 {
+    private Rectangle playRec;
+    private Rectangle instRec;
+    private Rectangle histRec;
     private final Hoopmania game;
     public OrthographicCamera cam;
     private Texture playButton;
-    private Texture 
+    private Texture instructionsButton;
+    private Textrure historyButton;
+    private final Hoopmania instruc;
+    private final Hoopmania hist;
     public Menu (final Hoopmania game)
     {
+        playRec = new Rectangle(0, 0, 0, 0);
+        instRec = new Rectangle(0, 0, 0, 0);
+        histRec = new Rectangle(0, 0, 0, 0);
         this.game = game;
+        instruc = new Hoopmania(sprites, font);
         cam = new OrthographicCamera();
         cam.setToOrtho(false, 800, 480);
+        hist = new Hoopmania(sprites, font);
     }
+
     /**
      * @param delta amount of time between successive
      *        calls of render
@@ -22,11 +34,38 @@ public class Menu implements Screen
     @Override
     public void render (float delta)
     {
+        instruc.batch.begin();
         game.batch.begin();
+        hist.batch.begin();
+        hist.font.draw(hist.batch, "Basketball was invented in 1891 in Springfield, Massachusetts by James Naismith. \n Naismith was a Canadian physical education instructor and was attempting to invent a less dangerous alternative to football. \n The YMCA and the US Army had a major role in spreading basketball globally. \n The first professional league was founded in 1898. In the 20th century, the NBA became the leading professional league worldwide. \n Basketball has become a multibillion-dollar industry and an large part of American culture.", 20, 800);,  
         game.font.draw(game.batch, "HOOPMANIA", 400, 980);
+        instruc.font.draw(instruc.batch, "Welcome to the HooopMania digital basketball game. \n Line up the arrow with the initial velocity you want the ball to have. \n When ready, press the left button on the mouse to release the ball. \n Points are accumulated by making shots into the basket. \n 5 missed shots ends the game.", 20, 800);
         playButton = new Texture(Gdx.files.internal("play.png"));
-        instructionsButton = new Texture(Gdx.files.internal("//tobecompletedlater));
+        instructionsButton = new Texture(Gdx.files.internal("instructions.png"));
+        historyButton = new Texture(Gdx.files.internal("history.png"));
+        playRec = new Rectangle(525, 700, playButton.getWidth(), playButton.getHeight());
+        instRec = new Rectangle(525, 500, instructionButton.getWidth(), instructionButton.getHeight());
+        histRec = new Rectangle(525, 300, historyButton.getWidth(), historyButton.getHeight());
+        if (Gdx.input.isTouched())
+        {
+            if (playRec.contains(Input.getX(), Input.getY())
+            {
+                game.setScreen(new GameScreen(game));
+                dispose();
+            }
+            else if (instRec.contains(Input.getX(), Input.getY())
+            {
+                game.setScreen(new GameScreen(instruc));
+                dispose();
+            }
+            else if (histRec.contains(Input.getX(), Input.getY())
+            {
+                game.setScreen(new GameScreen(hist));
+                dispose();
+            }
+        }
     }
+
     /**
      * @param width the width of the new screen size
      * @param height the height of the new screen size
@@ -37,12 +76,18 @@ public class Menu implements Screen
     {
         cam.setToOrtho(false, width, height);
     }
+
     /**
      * Implements show () in Screen
      */
     @Override
     public void show ()
     {
+        if (Gdx.input.isTouched())
+        {
+            
+            
+        }
     }
 
     /**
@@ -75,7 +120,8 @@ public class Menu implements Screen
     @Override
     public void dispose ()
     {
-        super(ball) = null;
+       
     }
 
 }
+
