@@ -19,12 +19,17 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.Gdx;
+import java.util.logging.FileHandler;
+import java.io.File;
 public class GamingScreen implements Screen
 {
     private final Hoopmania game;
     public  Texture gymBackground;
     public  Texture hoop;
-    public  Texture player;
+    public  Texture playerImg;
     public  Texture ballImg;
     private Circle ball;
     private Music mus;
@@ -33,61 +38,50 @@ public class GamingScreen implements Screen
     private Array<String> shotMessages;
     private BitmapFont counterFont;
     public  boolean shotMade;
-    public  long leftHoopEdge;
-    public  long rightHoopEdge;
+    public  final long LEFT_HOOP_EDGE = 774;
+    public  final long RIGHT_HOOP_EDGE = 837;
     public  long hoopHeight;
     public  OrthographicCamera cam;
     public  long shotCtr;
     public  long playerPosition;
-    public  final int VECTOR_MAX_LENGTH;
-    public  final int VECTOR_MIN_LENGTH;
+    public  final int VECTOR_MAX_LENGTH = 20;
+    public  final int VECTOR_MIN_LENGTH = 3;
     private boolean isReleased;
     public  float vectorDirection;
     public  float vectorMagnitude;
-    public  int ballX;
-    public  int ballY;
-    private final double G;//acceleration due to gravity
-    public  final double BALL_MASS;
+    private final double G = 15;//acceleration due to gravity
+    public  final double BALL_MASS = 0.6;//kilograms
     public  double v0x;
     public  double vy;
+    public  GridPoint2 tip;
+    public  GridPoint2 tail;
+    public  Rectangle player;
 
     /**
      * Constructor
      *
      * @param hoopHeight the desired height of the hoop
      */
-    public GamingScreen (final Hoopmania game, long hoopHeight)
+    public GamingScreen (final Hoopmania game)
     {
         this.game     = game;
+        cam           = new OrthographicCamera();
+        cam.setToOrtho(false, 1000, 1000);
         gymBackground = new Texture(Gdx.files.internal("Background.png"));
-        hoop          = new Texture(Gdx.files.internal(/* fill this in */));
-        player        = new Texture(Gdx.files.internal(/* fill this in */));
-
+        playerImg     = new Texture(Gdx.files.internal("Player Cropped No Ball.png"));
+        ballImg       = new Texture(Gdx.files.internal("Basketball.png"));
+        //         mus           = Gdx.audio.newMusic(Gdx.files.internal("BBall Music.aiff"));
+        //         mus.setLooping(true);
         crowdRoar = Gdx.audio.newSound(Gdx.files.internal("Roaring Crowd.wav"));
-        netSwish  = Gdx.audio.newSound(Gdx.files.internal("Swish.mp3"));
-
-        mus = Gdx.audio.newMusic(Gdx.files.internal("BBall Music"));
-        mus.setLooping(true);
-
-        // create the camera and the SpriteBatch
-        camera = new OrthographicCamera();
-        camera.setToOrtho(false, 1000, 1000);
-
-        playerPosition = MathUtils.random(10, 480);
-        this.hoopHeight = MathUtils.clamp(hoopHeight, 200, 800);
-
+        netSwish  = Gdx.audio.newSound(Gdx.files.internal("Swish.wav"));
         String[] messages = {"Nothing but net!", "Nice shot!", "Swish!",
                 "Buzzer Beater!", "Baller!", "Buckets!", "Awesome!",
-                "Sweet!", "Great!", "Keep it up!"}
+                "Sweet!", "Great!", "Keep it up!"};
         shotMessages = new Array(messages);
-
-        ball = new Circle();
-        ball.x = playerPosition + 40;
-        ball.y = 350;
-
-        // create the raindrops array and spawn the first raindrop
-        raindrops = new Array<Rectangle>();
-        spawnRaindrop();
+        counterFont = new BitmapFont(Gdx.files.internal("Creampuf.fnt"));
+        this.hoopHeight = MathUtils.clamp(hoopHeight, 200, 800);
+        playerPosition = MathUtils.random(10, 480);
+        ball = new Circle(playerPosition + 40, 350, 30);
     }
 
     /**
@@ -102,6 +96,11 @@ public class GamingScreen implements Screen
      */
     private void translateArrow ()
     {
+        double netForce = vectorMagnitude;
+        double acceleration = netForce / BALL_MASS;
+        double v0 = Math.sqrt(2 * acceleration * /* delta-x */15);//change the delta-x if necessary
+        v0x = v0 * MathUtils.cosDeg(vectorDirection);
+        vy = v0 * MathUtils.sinDeg(vectorDirection);
     }
 
     /**
@@ -113,6 +112,11 @@ public class GamingScreen implements Screen
      */
     private void unprojectArrow()
     {
+        Vector3 path = new Vector3(tip.x - tail.x, tip.y - tail.y, 0);
+        Vector3 unproj = cam.unproject(path);
+
+        vectorMagnitude = unproj.len();
+        vectorDirection = MathUtils.atan2(unproj.y, unproj.x) * MathUtils.radiansToDegrees;
     }
 
     /**
@@ -121,7 +125,11 @@ public class GamingScreen implements Screen
      */
     private boolean insideHoop()
     {
-        return true;
+        if (ball.y == hoopHeight && ball.x >= LEFT_HOOP_EDGE
+        && ball.x <= RIGHT_HOOP_EDGE)
+            return true;
+
+        return false;
     }
 
     /**
@@ -132,6 +140,73 @@ public class GamingScreen implements Screen
     @Override
     public void render (float delta)
     {
+        Gdx.gl.glClearColor(0, 0, 0, 0);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        cam.update();
+        game.sprites.setProjectionMatrix(cam.combined);
+
+        game.sprites.begin();
+        game.font.draw(game.sprites, "Shots Made: " + shotCtr, 400, 920);
+        game.sprites.draw(gymBackground, 0, 0, 1000, 1000);
+        game.sprites.draw(playerImg, playerPosition, 10, 40, 400);
+        game.sprites.end();
+
+        // process user input
+        if (Gdx.input.isTouched()) 
+        {
+            Vector3 touchPos = new Vector3();
+            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            cam.unproject(touchPos);
+            System.out.println("The x value is " + touchPos.x);
+        }
+        //         
+        //         if (Gdx.input.isKeyPressed(Keys.LEFT))
+        //             bucket.x -= 200 * Gdx.graphics.getDeltaTime();
+        //             
+        //         if (Gdx.input.isKeyPressed(Keys.RIGHT))
+        //             bucket.x += 200 * Gdx.graphics.getDeltaTime();
+        // 
+        //         // make sure the bucket stays within the screen bounds
+        //         if (bucket.x < 0)
+        //             bucket.x = 0;
+        //             
+        //         if (bucket.x > 800 - 64)
+        //             bucket.x = 800 - 64;
+        // 
+        //         // check if we need to create a new raindrop
+        //         if (TimeUtils.nanoTime() - lastDropTime > 1000000000)
+        //             spawnRaindrop();
+
+        // move the raindrops, remove any that are beneath the bottom edge of
+        // the screen or that hit the bucket. In the later case we increase the 
+        // value our drops counter and add a sound effect.
+        //         for(int i = 0; i < raindrops.size; i++)
+        //         {
+        // 
+        //             Rectangle raindrop = raindrops.get(i); 
+        //             raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
+        //             if (raindrop.y + 64 < 0)
+        //                 raindrops.removeIndex(i);
+        //             if (raindrop.overlaps(bucket)) 
+        //             {
+        //                 dropsGathered++;
+        //                 dropSound.play();
+        //                 raindrops.removeIndex(i); 
+        //                 i--;
+        //             }
+        //         }
+        //         Iterator<Rectangle> iter = raindrops.iterator();
+        //         while (iter.hasNext()) {
+        //             Rectangle raindrop = iter.next();
+        //             raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
+        //             if (raindrop.y + 64 < 0)
+        //                 iter.remove();
+        //             if (raindrop.overlaps(bucket)) {
+        //                 dropsGathered++;
+        //                 dropSound.play();
+        //                 iter.remove();
+        //             }
+        //         }
     }
 
     /**
