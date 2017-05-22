@@ -19,18 +19,19 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.Gdx;
 import java.util.logging.FileHandler;
 import java.io.File;
-public class GamingScreen implements Screen
+import com.badlogic.gdx.graphics.g2d.Sprite;
+public class GamingScreen extends Hoopmania implements Screen
 {
     private final Hoopmania game;
     public  Texture gymBackground;
     public  Texture hoop;
     public  Texture playerImg;
     public  Texture ballImg;
+    public  Sprite arrow;
     private Circle ball;
     private Music mus;
     private Sound netSwish;
@@ -49,10 +50,11 @@ public class GamingScreen implements Screen
     private boolean isReleased;
     public  float vectorDirection;
     public  float vectorMagnitude;
-    private final double G = 15;//acceleration due to gravity
+    private final double G = -15;//acceleration due to gravity
     public  final double BALL_MASS = 0.6;//kilograms
     public  double v0x;
     public  double vy;
+    public  boolean inMotion;
     public  GridPoint2 tip;
     public  GridPoint2 tail;
     public  Rectangle player;
@@ -70,8 +72,9 @@ public class GamingScreen implements Screen
         gymBackground = new Texture(Gdx.files.internal("Background.png"));
         playerImg     = new Texture(Gdx.files.internal("Player Cropped No Ball.png"));
         ballImg       = new Texture(Gdx.files.internal("Basketball.png"));
-        //         mus           = Gdx.audio.newMusic(Gdx.files.internal("BBall Music.aiff"));
-        //         mus.setLooping(true);
+        arrow         = new Sprite(new Texture(Gdx.files.internal("Arrow.png")));
+        mus           = Gdx.audio.newMusic(Gdx.files.internal("BBall Music.aiff"));
+        mus.setLooping(true);
         crowdRoar = Gdx.audio.newSound(Gdx.files.internal("Roaring Crowd.wav"));
         netSwish  = Gdx.audio.newSound(Gdx.files.internal("Swish.wav"));
         String[] messages = {"Nothing but net!", "Nice shot!", "Swish!",
@@ -149,16 +152,46 @@ public class GamingScreen implements Screen
         game.font.draw(game.sprites, "Shots Made: " + shotCtr, 400, 920);
         game.sprites.draw(gymBackground, 0, 0, 1000, 1000);
         game.sprites.draw(playerImg, playerPosition, 10, 40, 400);
+        game.sprites.draw(ballImg, ball.x, ball.y);
         game.sprites.end();
 
         // process user input
-        if (Gdx.input.isTouched()) 
+
+        int mouseX = Gdx.input.getX();
+        int mouseY = Gdx.input.getY();
+
+        mouseX = MathUtils.clamp(mouseX, (int)(ball.x) + 10, (int)(ball.x) + 60);
+        mouseY = MathUtils.clamp(mouseY, (int)(ball.y) + 10, (int)(ball.y) + 60);
+
+        tail = new GridPoint2((int)ball.x, (int)ball.y);
+        tip = new GridPoint2(mouseX, mouseY);
+
+        unprojectArrow();
+        arrow.setSize(vectorMagnitude, 15f);
+        arrow.rotate(vectorDirection);
+        arrow.setX(ball.x);
+        arrow.setY(ball.y - 7);
+        arrow.draw(sprites);
+
+        if (Gdx.input.justTouched())
+            inMotion = true;
+
+        if (inMotion)
         {
-            Vector3 touchPos = new Vector3();
-            touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-            cam.unproject(touchPos);
-            System.out.println("The x value is " + touchPos.x);
+            ball.x += v0x * delta;
+            ball.y += vy * delta + 0.5 * G * delta * delta;
+
+            vy = vy + G * delta;
+            if (insideHoop())
+            {
+                int rand = MathUtils.random(shotMessages.size);
+                String message = shotMessages.get(rand);
+                game.font.draw(game.sprites, message, 475, 960);
+                shotCtr++;
+                inMotion = false;
+            }
         }
+
         //         
         //         if (Gdx.input.isKeyPressed(Keys.LEFT))
         //             bucket.x -= 200 * Gdx.graphics.getDeltaTime();
