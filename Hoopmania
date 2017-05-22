@@ -25,7 +25,6 @@ public class Hoopmania extends Game
         this.setScreen(new GamingScreen(this));
     }
     
-    
     /**
      * Renders the game
      */
