@@ -8,6 +8,7 @@
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.Gdx;
 public class Hoopmania extends Game
 {
     public SpriteBatch sprites;
@@ -19,6 +20,9 @@ public class Hoopmania extends Game
     @Override
     public void create()
     {
+        sprites = new SpriteBatch();
+        font = new BitmapFont(Gdx.files.internal("Creampuf.fnt"));
+        this.setScreen(new GamingScreen(this));
     }
     
     
@@ -28,6 +32,7 @@ public class Hoopmania extends Game
     @Override
     public void render()
     {
+        super.render();
     }
     
     /**
@@ -36,5 +41,7 @@ public class Hoopmania extends Game
     @Override
     public void dispose()
     {
+        sprites.dispose();
+        font.dispose();
     }
 }
