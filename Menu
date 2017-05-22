@@ -126,7 +126,9 @@ public class Menu extends Hoopmania implements Screen
     @Override
     public void dispose ()
     {
-        
+        playButton.dispose();
+        instructionsButton.dispose();
+        historyButton.dispose();
     }
 
 }
