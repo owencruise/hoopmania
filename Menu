@@ -36,18 +36,10 @@ public class Menu extends Hoopmania implements Screen
     @Override
     public void render (float delta)
     {
-        instruc.sprites.begin();
-        game.sprites.begin();
-        hist.sprites.begin();
-        hist.font.draw(hist.sprites, "Basketball was invented in 1891 in Springfield, Massachusetts by James Naismith. \n Naismith was a Canadian physical education instructor and was attempting to invent a less dangerous alternative to football. \n The YMCA and the US Army had a major role in spreading basketball globally. \n The first professional league was founded in 1898. In the 20th century, the NBA became the leading professional league worldwide. \n Basketball has become a multibillion-dollar industry and an large part of American culture.", 20, 800);  
-        game.font.draw(game.sprites, "HOOPMANIA", 400, 980);
-        instruc.font.draw(instruc.sprites, "Welcome to the HooopMania digital basketball game. \n Line up the arrow with the initial velocity you want the ball to have. \n When ready, press the left button on the mouse to release the ball. \n Points are accumulated by making shots into the basket. \n 5 missed shots ends the game.", 20, 800);
+        game.sprites.begin(); 
+        game.font.draw(game.sprites, "HOOPMANIA", 400, 980);        
         playButton = new Texture(Gdx.files.internal("play.png"));
-        instructionsButton = new Texture(Gdx.files.internal("instructions.png"));
-        historyButton = new Texture(Gdx.files.internal("history.png"));
         playRec = new Rectangle(525, 700, playButton.getWidth(), playButton.getHeight());
-        instRec = new Rectangle(525, 500, instructionsButton.getWidth(), instructionsButton.getHeight());
-        histRec = new Rectangle(525, 300, historyButton.getWidth(), historyButton.getHeight());
         if (Gdx.input.isTouched())
         {
             if (playRec.contains(Gdx.input.getX(), Gdx.input.getY()))
@@ -66,6 +58,22 @@ public class Menu extends Hoopmania implements Screen
                 dispose();
             }
         }
+    }
+    
+    public void instrucScreen()
+    {
+        instruc.sprites.begin();
+        instruc.font.draw(instruc.sprites, "Welcome to the HooopMania digital basketball game. \n Line up the arrow with the initial velocity you want the ball to have. \n When ready, press the left button on the mouse to release the ball. \n Points are accumulated by making shots into the basket. \n 5 missed shots ends the game.", 20, 800);
+        instructionsButton = new Texture(Gdx.files.internal("instructions.png"));
+        instRec = new Rectangle(525, 500, instructionsButton.getWidth(), instructionsButton.getHeight());
+    }
+    
+    public void histScreen()
+    {
+        hist.sprites.begin();
+        hist.font.draw(hist.sprites, "Basketball was invented in 1891 in Springfield, Massachusetts by James Naismith. \n Naismith was a Canadian physical education instructor and was attempting to invent a less dangerous alternative to football. \n The YMCA and the US Army had a major role in spreading basketball globally. \n The first professional league was founded in 1898. In the 20th century, the NBA became the leading professional league worldwide. \n Basketball has become a multibillion-dollar industry and an large part of American culture.", 20, 800); 
+        historyButton = new Texture(Gdx.files.internal("history.png"));
+        histRec = new Rectangle(525, 300, historyButton.getWidth(), historyButton.getHeight());
     }
 
     /**
@@ -87,8 +95,7 @@ public class Menu extends Hoopmania implements Screen
     {
         if (Gdx.input.isTouched())
         {
-            //
-            //  
+            
         }
     }
 
@@ -106,10 +113,7 @@ public class Menu extends Hoopmania implements Screen
     @Override
     public void pause ()
     {
-        if (Gdx.input.isTouched())
-        {
-            
-        }
+        
     }
 
     /**
@@ -130,5 +134,4 @@ public class Menu extends Hoopmania implements Screen
         instructionsButton.dispose();
         historyButton.dispose();
     }
-
 }
