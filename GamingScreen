@@ -50,7 +50,7 @@ public class GamingScreen extends Hoopmania implements Screen
     private boolean isReleased;
     public  float vectorDirection;
     public  float vectorMagnitude;
-    private final double G = -15;//acceleration due to gravity
+    private final double G = -100;//acceleration due to gravity
     public  final double BALL_MASS = 0.6;//kilograms
     public  double v0x;
     public  double vy;
@@ -73,7 +73,7 @@ public class GamingScreen extends Hoopmania implements Screen
         playerImg     = new Texture(Gdx.files.internal("Player Cropped No Ball.png"));
         ballImg       = new Texture(Gdx.files.internal("Basketball.png"));
         arrow         = new Sprite(new Texture(Gdx.files.internal("Arrow.png")));
-        mus           = Gdx.audio.newMusic(Gdx.files.internal("BBall Music.aiff"));
+        mus           = Gdx.audio.newMusic(Gdx.files.internal("BBall Music.mp3"));
         mus.setLooping(true);
         crowdRoar = Gdx.audio.newSound(Gdx.files.internal("Roaring Crowd.wav"));
         netSwish  = Gdx.audio.newSound(Gdx.files.internal("Swish.wav"));
@@ -82,9 +82,8 @@ public class GamingScreen extends Hoopmania implements Screen
                 "Sweet!", "Great!", "Keep it up!"};
         shotMessages = new Array(messages);
         counterFont = new BitmapFont(Gdx.files.internal("Creampuf.fnt"));
-        this.hoopHeight = MathUtils.clamp(hoopHeight, 200, 800);
         playerPosition = MathUtils.random(10, 480);
-        ball = new Circle(playerPosition + 40, 350, 30);
+        ball = new Circle(playerPosition + 30, 360, 15);
     }
 
     /**
@@ -103,6 +102,7 @@ public class GamingScreen extends Hoopmania implements Screen
         double acceleration = netForce / BALL_MASS;
         double v0 = Math.sqrt(2 * acceleration * /* delta-x */15);//change the delta-x if necessary
         v0x = v0 * MathUtils.cosDeg(vectorDirection);
+
         vy = v0 * MathUtils.sinDeg(vectorDirection);
     }
 
@@ -148,40 +148,47 @@ public class GamingScreen extends Hoopmania implements Screen
         cam.update();
         game.sprites.setProjectionMatrix(cam.combined);
 
+        mus.play();
         game.sprites.begin();
         game.font.draw(game.sprites, "Shots Made: " + shotCtr, 400, 920);
         game.sprites.draw(gymBackground, 0, 0, 1000, 1000);
         game.sprites.draw(playerImg, playerPosition, 10, 40, 400);
-        game.sprites.draw(ballImg, ball.x, ball.y);
-        game.sprites.end();
-
-        // process user input
-
-        int mouseX = Gdx.input.getX();
-        int mouseY = Gdx.input.getY();
-
-        mouseX = MathUtils.clamp(mouseX, (int)(ball.x) + 10, (int)(ball.x) + 60);
-        mouseY = MathUtils.clamp(mouseY, (int)(ball.y) + 10, (int)(ball.y) + 60);
-
-        tail = new GridPoint2((int)ball.x, (int)ball.y);
-        tip = new GridPoint2(mouseX, mouseY);
-
-        unprojectArrow();
-        arrow.setSize(vectorMagnitude, 15f);
-        arrow.rotate(vectorDirection);
-        arrow.setX(ball.x);
-        arrow.setY(ball.y - 7);
-        arrow.draw(sprites);
+        game.sprites.draw(ballImg, ball.x, ball.y, 30, 30);
 
         if (Gdx.input.justTouched())
             inMotion = true;
 
+        if (!inMotion)
+        {
+            // process user input
+            int mouseX = Gdx.input.getX();
+            int mouseY = Gdx.input.getY();
+
+            //         mouseX = MathUtils.clamp(mouseX, (int)(ball.x) + 10, (int)(ball.x) + 60);
+            //         mouseY = MathUtils.clamp(mouseY, (int)(ball.y) + 10, (int)(ball.y) + 60);
+
+            tail = new GridPoint2((int)ball.x, (int)ball.y);
+            tip = new GridPoint2(mouseX, mouseY);
+
+            unprojectArrow();
+            translateArrow();
+            arrow.setSize(vectorMagnitude, 15f);
+            arrow.rotate(vectorDirection);
+            arrow.setX(ball.x);
+            arrow.setY(ball.y);
+            game.sprites.draw(arrow, ball.x, ball.y);
+        }
+        game.sprites.end();
+
+
         if (inMotion)
         {
-            ball.x += v0x * delta;
+            ball.x += v0x * 2.5 * delta;
             ball.y += vy * delta + 0.5 * G * delta * delta;
 
             vy = vy + G * delta;
+            System.out.println("vx =\t" + v0x);
+            System.out.println("vy =\t" + vy);
             if (insideHoop())
             {
                 int rand = MathUtils.random(shotMessages.size);
@@ -192,54 +199,11 @@ public class GamingScreen extends Hoopmania implements Screen
             }
         }
 
-        //         
-        //         if (Gdx.input.isKeyPressed(Keys.LEFT))
-        //             bucket.x -= 200 * Gdx.graphics.getDeltaTime();
-        //             
-        //         if (Gdx.input.isKeyPressed(Keys.RIGHT))
-        //             bucket.x += 200 * Gdx.graphics.getDeltaTime();
-        // 
-        //         // make sure the bucket stays within the screen bounds
-        //         if (bucket.x < 0)
-        //             bucket.x = 0;
-        //             
-        //         if (bucket.x > 800 - 64)
-        //             bucket.x = 800 - 64;
-        // 
-        //         // check if we need to create a new raindrop
-        //         if (TimeUtils.nanoTime() - lastDropTime > 1000000000)
-        //             spawnRaindrop();
-
-        // move the raindrops, remove any that are beneath the bottom edge of
-        // the screen or that hit the bucket. In the later case we increase the 
-        // value our drops counter and add a sound effect.
-        //         for(int i = 0; i < raindrops.size; i++)
-        //         {
-        // 
-        //             Rectangle raindrop = raindrops.get(i); 
-        //             raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
-        //             if (raindrop.y + 64 < 0)
-        //                 raindrops.removeIndex(i);
-        //             if (raindrop.overlaps(bucket)) 
-        //             {
-        //                 dropsGathered++;
-        //                 dropSound.play();
-        //                 raindrops.removeIndex(i); 
-        //                 i--;
-        //             }
-        //         }
-        //         Iterator<Rectangle> iter = raindrops.iterator();
-        //         while (iter.hasNext()) {
-        //             Rectangle raindrop = iter.next();
-        //             raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
-        //             if (raindrop.y + 64 < 0)
-        //                 iter.remove();
-        //             if (raindrop.overlaps(bucket)) {
-        //                 dropsGathered++;
-        //                 dropSound.play();
-        //                 iter.remove();
-        //             }
-        //         }
+        if (ball.x > 1000 || ball.y < 0)
+        {
+            game.sprites.dispose();
+            inMotion = false;
+        }
     }
 
     /**
@@ -290,5 +254,8 @@ public class GamingScreen extends Hoopmania implements Screen
     @Override
     public void dispose ()
     {
+        gymBackground.dispose();
+        playerImg.dispose();
+        ballImg.dispose();
     }
 }
