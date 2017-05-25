@@ -113,13 +113,11 @@ public class GamingScreen extends Hoopmania implements Screen
      * Postcondition: fields vectorMagnitude and vectorDirection
      * have been updated to correspond with the state of the arrow
      */
-    private void unprojectArrow()
+    private void unprojectArrow(Vector3 force)
     {
-        Vector3 path = new Vector3(tip.x - tail.x, tip.y - tail.y, 0);
-        Vector3 unproj = cam.unproject(path);
 
-        vectorMagnitude = unproj.len();
-        vectorDirection = MathUtils.atan2(unproj.y, unproj.x) * MathUtils.radiansToDegrees;
+        vectorMagnitude = force.len();
+        vectorDirection = MathUtils.atan2(force.y, force.x) * MathUtils.radiansToDegrees;
     }
 
     /**
@@ -161,25 +159,29 @@ public class GamingScreen extends Hoopmania implements Screen
         if (!inMotion)
         {
             // process user input
-            int mouseX = Gdx.input.getX();
-            int mouseY = Gdx.input.getY();
+            Vector3 pos = cam.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0)); 
+            //             System.out.println(pos);
+            Vector3 ballVector = new Vector3(ball.x, ball.y, 0);
+            Vector3 force = new Vector3(pos.x - ballVector.x, pos.y - ballVector.y, 0);
+            unprojectArrow(force);
+            vectorMagnitude = pos.dst(ballVector); 
 
             //         mouseX = MathUtils.clamp(mouseX, (int)(ball.x) + 10, (int)(ball.x) + 60);
             //         mouseY = MathUtils.clamp(mouseY, (int)(ball.y) + 10, (int)(ball.y) + 60);
+            // 
+            //             tail = new GridPoint2((int)ball.x, (int)ball.y);
+            //             tip = new GridPoint2(mouseX, mouseY);
 
-            tail = new GridPoint2((int)ball.x, (int)ball.y);
-            tip = new GridPoint2(mouseX, mouseY);
-
-            unprojectArrow();
             translateArrow();
+            System.out.println(vectorDirection); 
             arrow.setSize(vectorMagnitude, 15f);
-            arrow.rotate(vectorDirection);
-            arrow.setX(ball.x);
-            arrow.setY(ball.y);
+            arrow.setRotation(vectorDirection);
+            arrow.setX(ball.x + 5);
+            arrow.setY(ball.y - 13);
             game.sprites.draw(arrow, ball.x, ball.y);
+            //             System.out.println("vectorMagnitude = " + vectorMagnitude);
         }
         game.sprites.end();
-
 
         if (inMotion)
         {
@@ -201,7 +203,7 @@ public class GamingScreen extends Hoopmania implements Screen
 
         if (ball.x > 1000 || ball.y < 0)
         {
-            game.sprites.dispose();
+            dispose();
             inMotion = false;
         }
     }
