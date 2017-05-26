@@ -58,6 +58,7 @@ public class Menu extends Hoopmania implements Screen
                 dispose();
             }
         }
+        game.sprites.end();
     }
     
     public void instrucScreen()
