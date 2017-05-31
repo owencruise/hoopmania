@@ -1,4 +1,3 @@
-
 /**
  * GamingScreen
  * 
@@ -50,8 +49,8 @@ public class GamingScreen extends Hoopmania implements Screen
     private boolean isReleased;
     public  float vectorDirection;
     public  float vectorMagnitude;
-    private final double G = -100;//acceleration due to gravity
-    public  final double BALL_MASS = 0.6;//kilograms
+    private final double G = -20;//acceleration due to gravity
+    public  final double BALL_MASS = 0.5;//kilograms
     public  double v0x;
     public  double vy;
     public  boolean inMotion;
@@ -62,7 +61,6 @@ public class GamingScreen extends Hoopmania implements Screen
     /**
      * Constructor
      *
-     * @param hoopHeight the desired height of the hoop
      */
     public GamingScreen (final Hoopmania game)
     {
@@ -102,7 +100,6 @@ public class GamingScreen extends Hoopmania implements Screen
         double acceleration = netForce / BALL_MASS;
         double v0 = Math.sqrt(2 * acceleration * /* delta-x */15);//change the delta-x if necessary
         v0x = v0 * MathUtils.cosDeg(vectorDirection);
-
         vy = v0 * MathUtils.sinDeg(vectorDirection);
     }
 
@@ -115,7 +112,6 @@ public class GamingScreen extends Hoopmania implements Screen
      */
     private void unprojectArrow(Vector3 force)
     {
-
         vectorMagnitude = force.len();
         vectorDirection = MathUtils.atan2(force.y, force.x) * MathUtils.radiansToDegrees;
     }
@@ -173,7 +169,7 @@ public class GamingScreen extends Hoopmania implements Screen
             //             tip = new GridPoint2(mouseX, mouseY);
 
             translateArrow();
-            System.out.println(vectorDirection); 
+            //             System.out.println(vectorDirection); 
             arrow.setSize(vectorMagnitude, 15f);
             arrow.setRotation(vectorDirection);
             arrow.setX(ball.x + 5);
@@ -185,7 +181,7 @@ public class GamingScreen extends Hoopmania implements Screen
 
         if (inMotion)
         {
-            ball.x += v0x * 2.5 * delta;
+            ball.x += v0x * 2 * delta;
             ball.y += vy * delta + 0.5 * G * delta * delta;
 
             vy = vy + G * delta;
@@ -203,9 +199,14 @@ public class GamingScreen extends Hoopmania implements Screen
 
         if (ball.x > 1000 || ball.y < 0)
         {
-            dispose();
             inMotion = false;
+            playerPosition = MathUtils.random(10, 480);
+            ball.x = playerPosition + 30;
+            ball.y = 360;
         }
+        
+        if (shotCtr > 10)
+        dispose();
     }
 
     /**
@@ -256,8 +257,9 @@ public class GamingScreen extends Hoopmania implements Screen
     @Override
     public void dispose ()
     {
-        gymBackground.dispose();
         playerImg.dispose();
         ballImg.dispose();
+        gymBackground.dispose();
+        render();
     }
 }
