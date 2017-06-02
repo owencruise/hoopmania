@@ -36,7 +36,8 @@ public class Menu extends Hoopmania implements Screen
     @Override
     public void render (float delta)
     {
-        game.sprites.begin(); 
+        game.sprites.begin();
+        game.sprites.draw(new Texture(Gdx.files.internal("Background.png")), 0, 0, 1000, 1000);
         game.font.draw(game.sprites, "HOOPMANIA", 400, 980);        
         playButton = new Texture(Gdx.files.internal("play.png"));
         playRec = new Rectangle(525, 700, playButton.getWidth(), playButton.getHeight());
