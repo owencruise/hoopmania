@@ -25,7 +25,6 @@ import java.io.File;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 public class GamingScreen extends Hoopmania implements Screen
 {
-    private final Hoopmania game;
     public  Texture gymBackground;
     public  Texture hoop;
     public  Texture playerImg;
@@ -34,29 +33,31 @@ public class GamingScreen extends Hoopmania implements Screen
     private Circle ball;
     private Music mus;
     private Sound netSwish;
-    private Sound crowdRoar;
     private Array<String> shotMessages;
+    private String message;
     private BitmapFont counterFont;
     public  boolean shotMade;
-    public  final long LEFT_HOOP_EDGE = 774;
-    public  final long RIGHT_HOOP_EDGE = 837;
-    public  long hoopHeight;
     public  OrthographicCamera cam;
     public  long shotCtr;
     public  long playerPosition;
-    public  final int VECTOR_MAX_LENGTH = 20;
-    public  final int VECTOR_MIN_LENGTH = 3;
     private boolean isReleased;
     public  float vectorDirection;
     public  float vectorMagnitude;
-    private final double G = -20;//acceleration due to gravity
-    public  final double BALL_MASS = 0.5;//kilograms
     public  double v0x;
     public  double vy;
     public  boolean inMotion;
-    public  GridPoint2 tip;
-    public  GridPoint2 tail;
-    public  Rectangle player;
+    public  float timer;
+
+    private final Hoopmania game;
+    public  final long LEFT_HOOP_EDGE         = 760;
+    public  final long RIGHT_HOOP_EDGE        = 850;
+    public  final long LEFT_BACKBOARD_EDGE    = 845;
+    public  final long RIGHT_BACKBOARD_EDGE   = 880;
+    public  final long BOTTOM_BLACKBOARD_EDGE = 697;
+    public  final long TOP_BLACKBOARD_EDGE    = 893;
+    public  final long hoopHeight             = 675;
+    private final double G                    = -151;//acceleration due to gravity
+    public  final double BALL_MASS            = 0.6;//kilograms
 
     /**
      * Constructor
@@ -64,24 +65,23 @@ public class GamingScreen extends Hoopmania implements Screen
      */
     public GamingScreen (final Hoopmania game)
     {
-        this.game     = game;
-        cam           = new OrthographicCamera();
+        this.game         =     game;
+        cam               = new OrthographicCamera();
         cam.setToOrtho(false, 1000, 1000);
-        gymBackground = new Texture(Gdx.files.internal("Background.png"));
-        playerImg     = new Texture(Gdx.files.internal("Player Cropped No Ball.png"));
-        ballImg       = new Texture(Gdx.files.internal("Basketball.png"));
-        arrow         = new Sprite(new Texture(Gdx.files.internal("Arrow.png")));
-        mus           = Gdx.audio.newMusic(Gdx.files.internal("BBall Music.mp3"));
+        gymBackground     = new Texture(Gdx.files.internal("Background.png"));
+        playerImg         = new Texture(Gdx.files.internal("Player Cropped No Ball.png"));
+        ballImg           = new Texture(Gdx.files.internal("Basketball.png"));
+        arrow             = new Sprite(new Texture(Gdx.files.internal("Arrow.png")));
+        mus               =     Gdx.audio.newMusic(Gdx.files.internal("BBall Music.mp3"));
         mus.setLooping(true);
-        crowdRoar = Gdx.audio.newSound(Gdx.files.internal("Roaring Crowd.wav"));
-        netSwish  = Gdx.audio.newSound(Gdx.files.internal("Swish.wav"));
-        String[] messages = {"Nothing but net!", "Nice shot!", "Swish!",
+        netSwish          =     Gdx.audio.newSound(Gdx.files.internal("Swish.wav"));
+        String[] messages =     {"Nothing but net!", "Nice shot!", "Swish!",
                 "Buzzer Beater!", "Baller!", "Buckets!", "Awesome!",
                 "Sweet!", "Great!", "Keep it up!"};
-        shotMessages = new Array(messages);
-        counterFont = new BitmapFont(Gdx.files.internal("Creampuf.fnt"));
-        playerPosition = MathUtils.random(10, 480);
-        ball = new Circle(playerPosition + 30, 360, 15);
+        shotMessages      = new Array(messages);
+        counterFont       = new BitmapFont(Gdx.files.internal("Creampuf.fnt"));
+        playerPosition    =     MathUtils.random(10, 480);
+        ball              = new Circle(playerPosition + 30, 360, 15);
     }
 
     /**
@@ -96,11 +96,11 @@ public class GamingScreen extends Hoopmania implements Screen
      */
     private void translateArrow ()
     {
-        double netForce = vectorMagnitude;
+        double netForce     = vectorMagnitude;
         double acceleration = netForce / BALL_MASS;
-        double v0 = Math.sqrt(2 * acceleration * /* delta-x */15);//change the delta-x if necessary
-        v0x = v0 * MathUtils.cosDeg(vectorDirection);
-        vy = v0 * MathUtils.sinDeg(vectorDirection);
+        double v0           = Math.sqrt(2 * acceleration * /* delta-x */15);
+        v0x                 = 2 * v0 * MathUtils.cosDeg(vectorDirection);
+        vy                  = 2.5 * v0 * MathUtils.sinDeg(vectorDirection);
     }
 
     /**
@@ -122,10 +122,9 @@ public class GamingScreen extends Hoopmania implements Screen
      */
     private boolean insideHoop()
     {
-        if (ball.y == hoopHeight && ball.x >= LEFT_HOOP_EDGE
+        if (Math.abs(ball.y - hoopHeight) <= 20 && ball.x >= LEFT_HOOP_EDGE
         && ball.x <= RIGHT_HOOP_EDGE)
             return true;
-
         return false;
     }
 
@@ -141,61 +140,60 @@ public class GamingScreen extends Hoopmania implements Screen
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         cam.update();
         game.sprites.setProjectionMatrix(cam.combined);
-
         mus.play();
         game.sprites.begin();
-        game.font.draw(game.sprites, "Shots Made: " + shotCtr, 400, 920);
         game.sprites.draw(gymBackground, 0, 0, 1000, 1000);
+        game.font.draw(game.sprites, "Shots Made: " + shotCtr, 400, 920);
         game.sprites.draw(playerImg, playerPosition, 10, 40, 400);
         game.sprites.draw(ballImg, ball.x, ball.y, 30, 30);
+        Vector3 mouseUnproj = cam.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+
+        if (timer > 0)
+        {
+            timer -= delta;
+            game.font.draw(game.sprites, message, 475, 960);
+        }
 
         if (Gdx.input.justTouched())
             inMotion = true;
 
         if (!inMotion)
         {
-            // process user input
             Vector3 pos = cam.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0)); 
-            //             System.out.println(pos);
             Vector3 ballVector = new Vector3(ball.x, ball.y, 0);
             Vector3 force = new Vector3(pos.x - ballVector.x, pos.y - ballVector.y, 0);
             unprojectArrow(force);
             vectorMagnitude = pos.dst(ballVector); 
-
-            //         mouseX = MathUtils.clamp(mouseX, (int)(ball.x) + 10, (int)(ball.x) + 60);
-            //         mouseY = MathUtils.clamp(mouseY, (int)(ball.y) + 10, (int)(ball.y) + 60);
-            // 
-            //             tail = new GridPoint2((int)ball.x, (int)ball.y);
-            //             tip = new GridPoint2(mouseX, mouseY);
-
             translateArrow();
-            //             System.out.println(vectorDirection); 
             arrow.setSize(vectorMagnitude, 15f);
             arrow.setRotation(vectorDirection);
             arrow.setX(ball.x + 5);
             arrow.setY(ball.y - 13);
-            game.sprites.draw(arrow, ball.x, ball.y);
-            //             System.out.println("vectorMagnitude = " + vectorMagnitude);
         }
-        game.sprites.end();
 
         if (inMotion)
         {
-            ball.x += v0x * 2 * delta;
+            ball.x += v0x * 1.3 * delta;
             ball.y += vy * delta + 0.5 * G * delta * delta;
 
             vy = vy + G * delta;
-            System.out.println("vx =\t" + v0x);
-            System.out.println("vy =\t" + vy);
             if (insideHoop())
             {
-                int rand = MathUtils.random(shotMessages.size);
-                String message = shotMessages.get(rand);
+                timer = 3;
+                int rand = MathUtils.random(shotMessages.size - 1);
+                message = shotMessages.get(rand);
                 game.font.draw(game.sprites, message, 475, 960);
+                netSwish.play();
                 shotCtr++;
                 inMotion = false;
+                game.font.draw(game.sprites, "Shots Made: " + shotCtr, 400, 920);
+                playerPosition = MathUtils.random(10, 480);
+                ball.x = playerPosition + 30;
+                ball.y = 360;
             }
+
         }
+        game.sprites.end();
 
         if (ball.x > 1000 || ball.y < 0)
         {
@@ -204,9 +202,9 @@ public class GamingScreen extends Hoopmania implements Screen
             ball.x = playerPosition + 30;
             ball.y = 360;
         }
-        
-        if (shotCtr > 10)
-        dispose();
+
+        //         if (shotCtr > 10)
+        //             dispose();
     }
 
     /**
